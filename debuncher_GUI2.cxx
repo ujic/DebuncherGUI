@@ -379,10 +379,12 @@ CONDITION TO ACCEPT ONLY CERTAIN EVENT REGARDING THE DISTANCE FROM THE timestamp
 // fill histogram of current bunch (or total bunch)
 
 	if (trigRead) {
-		bunchHist->Fill((timestamp-timestampRef)/1e6); // it will write only events after the trigger (label=1)
-		bunchHistTotal->Fill((timestamp-timestampRef)/1e6);
-		bcgHist->Fill((timestamp-timestampRef)/1e6);
-		
+		if ((alias == QDC_TDC_X1_TYPE_ALIAS)&&(label==2)) // secures not to write the counters
+		{
+			bunchHist->Fill((timestamp-timestampRef)/1e6); // it will write only events after the trigger (label=1)
+			bunchHistTotal->Fill((timestamp-timestampRef)/1e6);
+			bcgHist->Fill((timestamp-timestampRef)/1e6);
+		}
 	}
 
 }// end while
