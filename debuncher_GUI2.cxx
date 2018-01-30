@@ -118,10 +118,15 @@ previousEventTrigger=false;
 
   TGHorizontalFrame *hframe2 = new TGHorizontalFrame(this,1000,40);
 
-	TGLabel *HistLeftL = new TGLabel(hframe2, "Hist.left");
-	hframe2->AddFrame(HistLeftL, new TGLayoutHints(kLHintsCenterX,5,5,3,4));
+	TGLabel *shiftL = new TGLabel(hframe2, "Shift");
+	hframe2->AddFrame(shiftL, new TGLayoutHints(kLHintsCenterX,5,5,3,4));
+	shift = new TGNumberEntry(hframe2, 0);
+   hframe2->AddFrame(shift, new TGLayoutHints(kLHintsCenterX,5,5,3,4));
+   
+  	TGLabel *histLeftL = new TGLabel(hframe2, "Shift");
+	hframe2->AddFrame(histLeftL, new TGLayoutHints(kLHintsCenterX,5,5,3,4));
 	histLeft = new TGNumberEntry(hframe2, 0);
-   hframe2->AddFrame(histLeft, new TGLayoutHints(kLHintsCenterX,5,5,3,4));
+   hframe2->AddFrame(histLeft, new TGLayoutHints(kLHintsCenterX,5,5,3,4)); 
 
 	TGLabel *HistRightL = new TGLabel(hframe2, "Hist.right");
 	hframe2->AddFrame(HistRightL, new TGLayoutHints(kLHintsCenterX,5,5,3,4));
@@ -465,7 +470,7 @@ else {
 	Float_t Xstep,x1,x2;
 	Float_t y1, y2;
 	Int_t bin;
-	Int_t shift = Int_t(histLeft->GetNumber()/(histRight->GetNumber()/samplesNo->GetNumber()));
+	Int_t shift = Int_t(shift->GetNumber()/(histRight->GetNumber()/samplesNo->GetNumber()));
 	
 	cout<<"shift = "<<shift<<endl;
 	
@@ -506,7 +511,7 @@ else {
 	
 	//inverseDistFunc is normalized on 1, now it should be normalized to the expected ramping
 	
-	inverseDistFunc -> Multiply(ff, (endRamp->GetNumber()-offsetRamp->GetNumber())/(histRight->GetNumber()-histLeft->GetNumber())); // Multiply(TF1* f1, c1) -> this = this*f1*c1;
+	inverseDistFunc -> Multiply(ff, (endRamp->GetNumber()-offsetRamp->GetNumber())/(histRight->GetNumber()-shift->GetNumber())); // Multiply(TF1* f1, c1) -> this = this*f1*c1;
 	inverseDistFunc -> Add(ff, offsetRamp->GetNumber());
 	fCanvas->cd(2);
 	inverseDistFunc -> Draw();
@@ -524,7 +529,7 @@ else {
 	myfile.open (c1);
 
 /*		
-	if (histLeft->GetNumber()>0) {
+	if (shift->GetNumber()>0) {
 		fileL->SetText("HISTOGRAM MUST START FROM 0 !!!!");
 		TimeL->SetText("HISTOGRAM MUST START FROM 0 !!!!");
 		return;

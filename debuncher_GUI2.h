@@ -53,7 +53,7 @@ TGTextEntry *fileNameTG;
 	TH1F *integralDistribution;
 	TCanvas *fCanvas;
 	TGLabel *fileL, *TimeL;
-	TGNumberEntry *jumpTrig, *histLeft, *histRight, *BCGLeft, *BCGRight, *offsetRamp, *endRamp, *samplesNo, *NBins; //*trigFrequency, 
+	TGNumberEntry *jumpTrig, *shift, *histLeft, *histRight, *BCGLeft, *BCGRight, *offsetRamp, *endRamp, *samplesNo, *NBins; //*trigFrequency, 
 	//TGFileBrowser* pBrowser;
 	TGCheckButton *TxtButonDraw;
 
