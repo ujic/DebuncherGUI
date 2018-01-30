@@ -439,9 +439,9 @@ else {
 	
 	Int_t bcgBins = Int_t(Float_t(NBins->GetNumber())*(histRight->GetNumber()-histLeft->GetNumber())/(BCGRight->GetNumber()-BCGLeft->GetNumber()));
 	Int_t avg=0;
-	for (i=1; i<=bcgBins; i++) avg+=bcgHist->GetBinContent(i);
+	//for (i=1; i<=bcgBins; i++) avg+=bcgHist->GetBinContent(i);
 	//avg= Int_t(Float_t(avg)/Float_t(bcgBins));
-	avg=200;
+	//avg=200;
 	cout<<"avg= "<<avg<<endl;
 	for (i=1; i<=NBins->GetNumber();i++) {
 		bunchHistTotal->SetBinContent(i, bunchHistTotal->GetBinContent(i)-avg);//-avg);
