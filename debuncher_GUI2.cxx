@@ -2,7 +2,7 @@
 
 // this version has a option to calculate the inverse distribution of the debunched ions by a ramp potential 
 
-
+// the subtraction from the integral distribution of value of the bin-1 when histLeft is set is too approximative
 
 int main(int argc, char **argv) {
 
@@ -123,7 +123,7 @@ previousEventTrigger=false;
 	shift = new TGNumberEntry(hframe2, 0);
    hframe2->AddFrame(shift, new TGLayoutHints(kLHintsCenterX,5,5,3,4));
    
-  	TGLabel *histLeftL = new TGLabel(hframe2, "Shift");
+  	TGLabel *histLeftL = new TGLabel(hframe2, "Hist.left");
 	hframe2->AddFrame(histLeftL, new TGLayoutHints(kLHintsCenterX,5,5,3,4));
 	histLeft = new TGNumberEntry(hframe2, 0);
    hframe2->AddFrame(histLeft, new TGLayoutHints(kLHintsCenterX,5,5,3,4)); 
@@ -450,7 +450,7 @@ else {
 	cout<<"avg= "<<avg<<endl;
 	for (i=1; i<=NBins->GetNumber();i++) {
 		bunchHistTotal->SetBinContent(i, bunchHistTotal->GetBinContent(i)-avg);//-avg);
-		cout<<i<<": "<<bunchHistTotal->GetBinContent(i)<<endl;
+		//cout<<i<<": "<<bunchHistTotal->GetBinContent(i)<<endl;
 	}
 	
 	for (i=1; i<=NBins->GetNumber(); i++){   
@@ -458,26 +458,39 @@ else {
 	}
 	integralDistribution -> Scale(1/bunchHistTotal->Integral(1,NBins->GetNumber()));
 	
+
+	Float_t Ystep=1./samplesNo->GetNumber();
+	cout<<"Ystep="<<Ystep<<endl;
+	Float_t Xstep,x1,x2;
+	Float_t y1, y2;
+/*	cout<<"HistLeft="<<histLeft->GetNumber()<<endl;
+	Int_t k = integralDistribution->GetXaxis()->FindBin(histLeft->GetNumber());
+	
+	if (histLeft->GetNumber()<integralDistribution->GetXaxis()->GetBinCenter(k))
+	{	
+		x2 = integralDistribution->GetXaxis()->GetBinCenter(bin);
+		x1 = integralDistribution->GetXaxis()->GetBinCenter(bin-1);
+*/
+//	integralDistribution -> Add(ff, -(integralDistribution -> GetBinContent(k-1)));
+//	cout<<"k="<<k<<", -(integralDistribution -> GetBinContent(k-1))="<<-(integralDistribution -> GetBinContent(k-1))<<endl;
+	
 	// 19.1.2017. for checking
 	TH1F *tmpIntDist = (TH1F*) integralDistribution->Clone();
 	
 	// end checking 19.1.2017.
 	
-	TH1F *inverseDistFunc = new TH1F("InverseDistribution","Inverse Distribution", samplesNo->GetNumber(), 0, histRight->GetNumber());
+	TH1F *inverseDistFunc = new TH1F("InverseDistribution","Inverse Distribution", samplesNo->GetNumber(), histLeft->GetNumber(), histRight->GetNumber());
 	
-	Float_t Ystep=1./samplesNo->GetNumber();
-	cout<<"Ystep="<<Ystep<<endl;
-	Float_t Xstep,x1,x2;
-	Float_t y1, y2;
+
 	Int_t bin;
-	Int_t shift = Int_t(shift->GetNumber()/(histRight->GetNumber()/samplesNo->GetNumber()));
+	Int_t shiftBin = Int_t(shift->GetNumber()/(histRight->GetNumber()/samplesNo->GetNumber()));
 	
-	cout<<"shift = "<<shift<<endl;
+	cout<<"shift = "<<shiftBin<<endl;
 	
-	for (i=1; i<=shift;i++) inverseDistFunc->SetBinContent(i, 0);
+	for (i=1; i<=shiftBin;i++) inverseDistFunc->SetBinContent(i, 0);
 	
 	
-	for (i=1+shift; i<(samplesNo->GetNumber()+1); i++){
+	for (i=1+shiftBin; i<(samplesNo->GetNumber()+1); i++){
 		
 		bin = integralDistribution->FindFirstBinAbove(Ystep);
 		y2=integralDistribution->GetBinContent(bin);
@@ -508,15 +521,22 @@ else {
 		// the last bin must finish with 1, always
 	inverseDistFunc->SetBinContent(samplesNo->GetNumber(), 1); // change 17.1.2017.
 	
+	inverseDistFunc -> Scale(1./inverseDistFunc -> GetMaximum());
+	
+	// I Don't know why is this rescaling necessary, but it works
+	inverseDistFunc -> Add(ff, -histLeft->GetNumber()/histRight->GetNumber()); 
+	
+	inverseDistFunc -> Scale(1./inverseDistFunc -> GetMaximum());
+	
 	
 	//inverseDistFunc is normalized on 1, now it should be normalized to the expected ramping
 	
-	inverseDistFunc -> Multiply(ff, (endRamp->GetNumber()-offsetRamp->GetNumber())/(histRight->GetNumber()-shift->GetNumber())); // Multiply(TF1* f1, c1) -> this = this*f1*c1;
+	inverseDistFunc -> Multiply(ff, (endRamp->GetNumber()-offsetRamp->GetNumber())); // /(histRight->GetNumber()-shift->GetNumber())); // Multiply(TF1* f1, c1) -> this = this*f1*c1;
 	inverseDistFunc -> Add(ff, offsetRamp->GetNumber());
 	fCanvas->cd(2);
-	inverseDistFunc -> Draw();
+	inverseDistFunc -> Draw("hist");
 	fCanvas->cd(1);
-	bunchHistTotal->Draw();
+	bunchHistTotal->Draw("hist");
 	
 	fCanvas->Update();
 	//integralDistribution -> Draw();
@@ -538,6 +558,7 @@ else {
 
 
 // check 19.1.2018
+/*
 myfile<<"Total Bunch histogram \n\n\n\n\n";
 
 	for (i=1; i<(NBins->GetNumber()+1); i++){
@@ -550,11 +571,12 @@ myfile<<"Total Bunch histogram \n\n\n\n\n";
 		myfile<<tmpIntDist->GetBinContent(i)<<endl;
 	}
 	myfile<<"\n\n\n\n\n";
+	*/
 	
 // end of check 19.1.2018
 
 
-	myfile<<"# Sample rate:    "<<int(1./(1e-3*float(histRight->GetNumber())/float(samplesNo->GetNumber())))<<endl;
+	myfile<<"# Sample rate:    "<<int(1./(1e-3*float((histRight->GetNumber()-histLeft->GetNumber())/float(samplesNo->GetNumber()))))<<endl;
 	// 1e-3 because the histRight->GetNumber() is in ms
 	myfile<<"# Samples :       "<<samplesNo->GetNumber()<<endl;
 	for (i=1; i<(samplesNo->GetNumber()+1); i++){
